@@ -1,59 +1,59 @@
-# Parole
+# Assistant Phonétique — Angular
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.7.
+Application Angular full client (aucun serveur requis) pour assembler des phonèmes IPA
+et les écouter via deux moteurs audio.
 
-## Development server
-
-To start a local development server, run:
-
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Démarrage rapide
 
 ```bash
-ng generate component component-name
+npm install
+npm start          # http://localhost:4200
+npm run build      # build production dans dist/
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Moteurs audio
 
-```bash
-ng generate --help
+### Web Speech API (par défaut)
+- ✅ Aucune clé, aucun coût, fonctionne hors ligne
+- ✅ Natif dans Chrome, Edge, Safari
+- ⚠️ Qualité variable selon le navigateur/OS
+- Supporte les phonèmes IPA via balises SSML `<phoneme>`
+
+### Azure Neural TTS (haute qualité)
+1. Créer une ressource Speech sur https://portal.azure.com
+   - Type : **Speech Services**, Région : **France Central**, Tarif : **F0 (gratuit)**
+2. Copier la clé et la saisir dans ⚙ Paramètres de l'app
+3. **Pour une app publique** : restreindre la clé à ton domaine dans Azure :
+   `Ressource Speech → Réseau → Autoriser uniquement les domaines suivants`
+
+| Voix              | Genre | Description              |
+|-------------------|-------|--------------------------|
+| DeniseNeural      | F     | Par défaut, naturelle    |
+| HenriNeural       | M     | Voix masculine claire    |
+| EloiseNeural      | F     | Voix enfant              |
+| YvetteNeural      | F     | Alternative féminine     |
+| RemyMultilingual  | M     | Multilingue              |
+
+## Architecture
+
+```
+src/app/
+├── models/
+│   └── phoneme.model.ts          ← alphabet IPA + types
+├── services/
+│   ├── web-speech.service.ts     ← moteur Web Speech API
+│   ├── azure-speech.service.ts   ← moteur Azure Neural TTS
+│   └── tts.service.ts            ← façade unifiée (signals Angular)
+└── components/
+    ├── engine-switch/             ← toggle Web Speech / Azure
+    ├── settings-modal/            ← config clé Azure
+    ├── phoneme-keyboard/          ← clavier IPA cliquable
+    └── word-builder/              ← assemblage + lecture
 ```
 
-## Building
+## Notes
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- La clé Azure est stockée dans `localStorage` (chiffrée côté navigateur)
+- Les deux modes sont disponibles : **mot entier** et **phonème par phonème**
+- Le SSML généré est affiché en temps réel dans l'interface
+- Support light/dark mode automatique via `prefers-color-scheme`

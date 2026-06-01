@@ -1,0 +1,20 @@
+<div class="keyboard">
+  @for (group of groups; track group.label) {
+    <div class="group">
+      <div class="group-label">{{ group.label }}</div>
+      <div class="group-keys">
+        @for (p of getGroup(group.category); track p.symbol) {
+          <button
+            matButton="tonal"
+            [title]="p.example + ' · /' + p.symbol + '/'"
+            (click)="onKey(p)"
+          >
+            <span class="phoneme-symbol">/{{ p.symbol }}/</span>
+            <img [src]="'sounds/' + p.image" [alt]="p.example" />
+            <span class="phoneme-example">{{ p.example }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+</div>

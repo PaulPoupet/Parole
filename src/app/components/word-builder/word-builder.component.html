@@ -1,0 +1,84 @@
+<div class="builder">
+  <div class="api-key-box">
+    <mat-form-field appearance="outline" class="api-key-field">
+      <mat-label>Clé Google TTS</mat-label>
+      <input
+        matInput
+        [value]="tts.googleApiKey()"
+        (input)="updateApiKey($any($event.target).value)"
+        placeholder="Entrez votre clé API Google Cloud"
+      />
+    </mat-form-field>
+    @if (tts.googleApiKey()) {
+      <button mat-button type="button" (click)="tts.clearGoogleApiKey()">Effacer la clé</button>
+    }
+    <div class="api-key-status" [class.active]="tts.googleConfigured()">
+      @if (tts.googleConfigured()) {
+        <span>Google TTS activé.</span>
+      } @else {
+        <span>Utilise Web Speech si aucune clé Google n'est renseignée.</span>
+      }
+    </div>
+  </div>
+
+  <!-- Mot assemblé -->
+  <div class="word-display" [class.empty]="phonemes().length === 0">
+    @if (phonemes().length === 0) {
+      <span class="placeholder">Sélectionnez des phonèmes sur le clavier</span>
+    } @else {
+      <mat-chip-set>
+        @for (p of phonemes(); track $index; let i = $index) {
+          <mat-chip removable (removed)="remove(i)"
+            >/{{ p.symbol }}/
+            <button matChipRemove [attr.aria-label]="'remove ' + p.symbol">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+        }
+      </mat-chip-set>
+    }
+  </div>
+
+  <!-- IPA résultant -->
+  @if (phonemes().length > 0) {
+    <div class="ipa-result">
+      Transcription IPA : <strong>/{{ ipa() }}/</strong>
+    </div>
+  }
+
+  <!-- Boutons d'action -->
+  <div class="actions">
+    <button
+      matButton="filled"
+      [disabled]="phonemes().length === 0 || tts.isPlaying()"
+      (click)="play('word')"
+    >
+      Mot entier
+      <mat-icon>play_arrow</mat-icon>
+    </button>
+    <button
+      matButton="tonal"
+      [disabled]="phonemes().length === 0 || tts.isPlaying()"
+      (click)="play('slow')"
+    >
+      Phonème par phonème
+      <mat-icon>motion_play</mat-icon>
+    </button>
+    <button matButton="tonal" [disabled]="phonemes().length === 0" (click)="clear()">
+      Effacer
+    </button>
+  </div>
+
+  <!-- Erreur -->
+  @if (tts.lastError()) {
+    <div class="error-box">{{ tts.lastError() }}</div>
+  }
+
+  <!-- SSML généré -->
+  @if (phonemes().length > 0) {
+    <details class="ssml-details">
+      <summary>Voir le SSML généré</summary>
+      <pre class="ssml-code">{{ tts.getSsmlPreview(ipa()) }}</pre>
+    </details>
+  }
+</div>
